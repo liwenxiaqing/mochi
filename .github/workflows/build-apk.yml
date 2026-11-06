@@ -19,7 +19,7 @@ jobs:
           mkdir -p app/src/main/java/com/demo/web
           mkdir -p app/src/main/assets
           cat > settings.gradle <<'END'
-pluginManagement {
+cat > settings.gradle <<-EOF
   repositories {
     google()
     mavenCentral()
