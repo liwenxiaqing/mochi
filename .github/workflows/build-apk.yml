@@ -1,4 +1,4 @@
- name: Build Offline APK
+name: Build Offline APK
 on:
   push:
     branches: [ main ]
@@ -14,7 +14,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Generate project & copy web files
+      - name: Generate Android project
         run: |
           mkdir -p app/src/main/java/com/demo/web
           mkdir -p app/src/main/assets
@@ -89,7 +89,7 @@ END
       - name: Build APK
         run: ./gradlew assembleDebug
 
-      - name: Download APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: offline-apk
