@@ -18,8 +18,8 @@ jobs:
         run: |
           mkdir -p app/src/main/java/com/demo/web
           mkdir -p app/src/main/assets
-          cat > settings.gradle <<'END'
-cat > settings.gradle <<-EOF
+          cat > settings.gradle <<-EOF
+pluginManagement {
   repositories {
     google()
     mavenCentral()
@@ -28,16 +28,19 @@ cat > settings.gradle <<-EOF
 }
 rootProject.name = "WordCard"
 include(":app")
-END
-          cat > build.gradle <<'END'
+EOF
+          cat > build.gradle <<-EOF
 buildscript {
-  repositories { google(); mavenCentral() }
+  repositories {
+    google()
+    mavenCentral()
+  }
   dependencies {
     classpath "com.android.tools.build:gradle:8.2.0"
   }
 }
-END
-          cat > app/build.gradle <<'END'
+EOF
+          cat > app/build.gradle <<-EOF
 plugins { id 'com.android.application' }
 android {
   namespace "com.demo.web"
@@ -54,8 +57,8 @@ android {
     targetCompatibility JavaVersion.VERSION_17
   }
 }
-END
-          cat > app/src/main/AndroidManifest.xml <<'END'
+EOF
+          cat > app/src/main/AndroidManifest.xml <<-EOF
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <application android:label="言字卡">
@@ -67,8 +70,8 @@ END
     </activity>
   </application>
 </manifest>
-END
-          cat > app/src/main/java/com/demo/web/MainActivity.java <<'END'
+EOF
+          cat > app/src/main/java/com/demo/web/MainActivity.java <<-EOF
 package com.demo.web;
 import android.app.Activity;
 import android.os.Bundle;
@@ -83,14 +86,5 @@ public class MainActivity extends Activity {
     setContentView(wv);
   }
 }
-END
+EOF
           cp -r ./dist/* app/src/main/assets/
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: offline-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
