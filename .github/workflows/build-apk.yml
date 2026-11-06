@@ -1,0 +1,96 @@
+ name: Build Offline APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Generate project & copy web files
+        run: |
+          mkdir -p app/src/main/java/com/demo/web
+          mkdir -p app/src/main/assets
+          cat > settings.gradle <<'END'
+pluginManagement {
+  repositories {
+    google()
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+rootProject.name = "WordCard"
+include(":app")
+END
+          cat > build.gradle <<'END'
+buildscript {
+  repositories { google(); mavenCentral() }
+  dependencies {
+    classpath "com.android.tools.build:gradle:8.2.0"
+  }
+}
+END
+          cat > app/build.gradle <<'END'
+plugins { id 'com.android.application' }
+android {
+  namespace "com.demo.web"
+  compileSdk 34
+  defaultConfig {
+    applicationId "com.demo.web"
+    minSdk 24
+    targetSdk 34
+    versionCode 1
+    versionName "1.0"
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+}
+END
+          cat > app/src/main/AndroidManifest.xml <<'END'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application android:label="言字卡">
+    <activity android:name=".MainActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>
+END
+          cat > app/src/main/java/com/demo/web/MainActivity.java <<'END'
+package com.demo.web;
+import android.app.Activity;
+import android.os.Bundle;
+import android.webkit.WebView;
+public class MainActivity extends Activity {
+  @Override
+  protected void onCreate(Bundle b) {
+    super.onCreate(b);
+    WebView wv = new WebView(this);
+    wv.getSettings().setJavaScriptEnabled(true);
+    wv.loadUrl("file:///android_asset/index.html");
+    setContentView(wv);
+  }
+}
+END
+          cp -r ./dist/* app/src/main/assets/
+
+      - name: Build APK
+        run: ./gradlew assembleDebug
+
+      - name: Download APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
